@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 
 from contentmind.config import get_settings
-from contentmind.memory import MemoryStore
+from contentmind.memory import MemoryStore, SQLiteMemoryStore
 from contentmind.schemas import ContentItem, HealthResponse, MemoryQueryResponse, MemoryRecord
 
 
 def create_app(memory_store: MemoryStore | None = None) -> FastAPI:
     settings = get_settings()
-    store = memory_store or MemoryStore()
+    store = memory_store or SQLiteMemoryStore(settings.database_url)
     app = FastAPI(
         title=settings.app_name,
         description="Persistent memory layer for AI content pipelines.",

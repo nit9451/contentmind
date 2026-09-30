@@ -130,7 +130,7 @@ GenerationRun
 2. Add Pydantic models for channel profiles and content items. Done.
 3. Add memory ingestion endpoint. Done.
 4. Add retrieval endpoint with simple keyword search. Done.
-5. Implement local SQLite persistence.
+5. Implement local SQLite persistence. Done.
 6. Upgrade retrieval to embeddings.
 7. Add Claude generation endpoint.
 8. Add tests for ingestion, retrieval, and context building.

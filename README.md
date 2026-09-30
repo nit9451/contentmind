@@ -142,7 +142,7 @@ generation_request = {
 
 ## Repository Status
 
-This repository contains the architecture direction and an initial FastAPI implementation. The current implementation exposes a health endpoint, memory ingestion, simple in-memory retrieval, and schema models that will support the larger agent workflow.
+This repository contains the architecture direction and an initial FastAPI implementation. The current implementation exposes a health endpoint, memory ingestion, SQLite-backed local persistence, simple retrieval, and schema models that will support the larger agent workflow.
 
 ## Build Roadmap
 
@@ -152,10 +152,11 @@ This repository contains the architecture direction and an initial FastAPI imple
 | 2 | Create FastAPI skeleton and configuration | Done |
 | 3 | Implement local memory ingestion | Done |
 | 4 | Add simple memory retrieval | Done |
-| 5 | Add semantic retrieval and ranking | Planned |
-| 6 | Add Claude generation pipeline | Planned |
-| 7 | Add tests, Docker, and CI | Planned |
-| 8 | Add dashboard or CLI workflow | Planned |
+| 5 | Add SQLite persistence | Done |
+| 6 | Add semantic retrieval and ranking | Planned |
+| 7 | Add Claude generation pipeline | Planned |
+| 8 | Add tests, Docker, and CI | Planned |
+| 9 | Add dashboard or CLI workflow | Planned |
 
 ## Tech Lead Notes
 
@@ -185,7 +186,7 @@ POST /memory/ingest
 GET /memory/query?q=ai-thumbnails&limit=5
 ```
 
-The current memory store is intentionally in-memory for the first MVP. The next backend step is persistence with SQLite or PostgreSQL.
+The current memory store uses SQLite for local persistence. The next backend step is semantic retrieval with embeddings.
 
 ## Why This Project Matters
 
