@@ -1,374 +1,187 @@
-# 🧠 ContentMind
+# ContentMind
 
-> **Persistent memory layer for AI content pipelines** — built on Cognee's graph-vector store.
-> Never re-explain your content strategy to an AI again.
+Persistent memory layer for AI content pipelines.
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
-[![Cognee](https://img.shields.io/badge/Memory-Cognee-purple.svg)](https://cognee.ai)
-[![Claude API](https://img.shields.io/badge/LLM-Claude%20API-orange.svg)](https://anthropic.com)
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-green.svg)](https://fastapi.tiangolo.com)
-[![WeMakeDevs](https://img.shields.io/badge/Hackathon-WeMakeDevs%20×%20Cognee-red.svg)](https://wemakedevs.org)
+ContentMind is a product and architecture concept for giving AI content workflows long-term memory. Instead of repeating brand context, audience details, past content history, and style rules in every prompt, ContentMind stores that knowledge once and retrieves the right context before generation.
 
----
+[![Project Status](https://img.shields.io/badge/status-architecture%20spec-blue)](https://github.com/nit9451/contentmind)
+[![AI Focus](https://img.shields.io/badge/focus-RAG%20%2B%20memory-4f46e5)](https://github.com/nit9451/contentmind)
+[![Backend](https://img.shields.io/badge/backend-FastAPI-009688)](https://fastapi.tiangolo.com/)
+[![LLM](https://img.shields.io/badge/LLM-Claude%20API-d97757)](https://www.anthropic.com/)
 
-## 🎯 The Problem
+## Problem
 
-Every AI content creator faces the same frustration:
+Most AI content workflows are stateless. Every new session starts with repeated setup:
 
-```
-Session 1: "My channel is @pranitz.ai, I cover AI tools for creators,
-            my audience is solopreneurs, my tone is..."
+- What the channel is about
+- Who the audience is
+- What tone and format to use
+- Which topics have already been covered
+- Which hooks, formats, and angles performed well
 
-Session 2: "My channel is @pranitz.ai, I cover AI tools for creators,
-            my audience is solopreneurs, my tone is..."
+That repeated context makes prompting slower, less reliable, and harder to scale.
 
-Session 3: "My channel is @pranitz.ai, I cover AI tools for creators..."
-```
+## Solution
 
-**LLMs have no memory.** Every session starts from zero. You waste 20% of every 
-prompt re-establishing context that should already be known.
+ContentMind acts as a memory layer between a content workflow and an LLM. It stores structured channel knowledge, historical scripts, topic relationships, and audience signals, then retrieves relevant context before each generation request.
 
-ContentMind solves this.
-
----
-
-## 💡 The Solution
-
-ContentMind is a **persistent memory layer** that sits between your content 
-pipeline and your LLM. It remembers everything — your channel identity, past 
-scripts, audience insights, topic performance, and brand voice — and injects 
-the right context automatically into every generation request.
-
-```
-Without ContentMind:          With ContentMind:
-─────────────────────         ──────────────────────────────
-[You] "My channel is X,       [You] "Write a script about
-       my audience is Y,              AI image tools"
-       my tone is Z,          [ContentMind] → auto-injects
-       past topics were A,             channel context
-       B, C... now write               past scripts
-       a script about                  audience profile
-       AI image tools"                 brand voice
-                              [Claude] → Perfect script,
-                                        first try
+```text
+Content inputs
+  -> ingestion layer
+  -> graph/vector memory
+  -> retrieval and ranking
+  -> prompt context builder
+  -> Claude/API generation
+  -> script, outline, or content plan
 ```
 
----
+The goal is simple: keep creative output consistent without forcing the user to re-explain the same context every time.
 
-## 🏗️ Architecture
+## Core Use Cases
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         CONTENTMIND                                  │
-│                  Persistent AI Memory Layer                          │
-└─────────────────────────────────────────────────────────────────────┘
+| Use case | What ContentMind remembers | Output |
+| --- | --- | --- |
+| Script generation | Channel voice, audience, past scripts, topic gaps | On-brand video scripts |
+| Topic planning | Covered topics, clusters, performance signals | New content ideas |
+| Style consistency | Hook style, pacing, recurring phrases, format rules | Brand-aligned drafts |
+| Avoid repetition | Similar historical topics and angles | Duplicate-topic warnings |
+| Content research | Notes, sources, previous conclusions | Reusable context blocks |
 
-┌─────────────────┐     ┌──────────────────────────────────────────┐
-│   INGESTION     │     │           COGNEE MEMORY STORE            │
-│   LAYER         │     │                                          │
-│                 │     │  ┌─────────────┐  ┌──────────────────┐  │
-│ • Past scripts  │────▶│  │ Graph Store │  │  Vector Store    │  │
-│ • Channel info  │     │  │             │  │                  │  │
-│ • Video titles  │     │  │ Channel ──▶ │  │ Semantic search  │  │
-│ • Descriptions  │     │  │ Topics ───▶ │  │ across all past  │  │
-│ • Comments      │     │  │ Scripts ──▶ │  │ content          │  │
-│ • Analytics     │     │  │ Audience ──▶│  │                  │  │
-│                 │     │  └─────────────┘  └──────────────────┘  │
-└─────────────────┘     │         │                  │             │
-                        │         └────────┬─────────┘             │
-                        │                  │                        │
-                        └──────────────────┼────────────────────────┘
-                                           │
-                                           ▼
-                        ┌──────────────────────────────┐
-                        │      RETRIEVAL ENGINE        │
-                        │                              │
-                        │  Query: "script about        │
-                        │          AI image tools"     │
-                        │             │                │
-                        │             ▼                │
-                        │  Graph traversal +           │
-                        │  Vector similarity +         │
-                        │  Re-ranking                  │
-                        │             │                │
-                        │             ▼                │
-                        │  Relevant context:           │
-                        │  • Channel = @pranitz.ai     │
-                        │  • Past: "Midjourney guide"  │
-                        │  • Audience: solopreneurs    │
-                        │  • Top hook style: question  │
-                        └──────────────┬───────────────┘
-                                       │
-                                       ▼
-                        ┌──────────────────────────────┐
-                        │      GENERATION LAYER        │
-                        │                              │
-                        │  Claude API                  │
-                        │  + injected memory context   │
-                        │  = perfect script, first try │
-                        └──────────────────────────────┘
+## Architecture
+
+```text
+                           ContentMind
+
+  Ingestion Layer
+  - channel profile
+  - scripts and outlines
+  - content pillars
+  - audience notes
+  - analytics metadata
+          |
+          v
+  Memory Store
+  - graph relationships for entities and topics
+  - vector search for semantic retrieval
+  - structured metadata for filtering
+          |
+          v
+  Retrieval Engine
+  - query understanding
+  - hybrid graph/vector lookup
+  - deduplication
+  - relevance ranking
+          |
+          v
+  Context Builder
+  - selected memories
+  - brand/style constraints
+  - previous-topic warnings
+  - generation instructions
+          |
+          v
+  Generation Layer
+  - Claude API
+  - script generation
+  - outline generation
+  - topic planning
 ```
 
----
+More detail: [docs/architecture.md](docs/architecture.md)
 
-## ✨ Features
-
-### 🧩 Persistent Channel Memory
-ContentMind remembers your entire content identity across sessions:
-- Channel name, niche, and positioning
-- Target audience profile and pain points
-- Brand voice, tone, and style preferences
-- Content pillars and topic categories
-
-### 📚 Script History Graph
-Every script you've ever written becomes a node in the knowledge graph:
-- Topic relationships and content gaps
-- Hook styles that worked vs didn't
-- Script structures and pacing patterns
-- Related topic clusters for series planning
-
-### 🎯 Audience Intelligence
-Learns from real engagement data:
-- Which topics drove the most views
-- Audience questions from comments
-- Retention patterns per content type
-- Optimal video length per topic category
-
-### ⚡ Context-Aware Generation
-Injects the right memory at generation time:
-- No repeated prompting — ContentMind handles context
-- Cross-session continuity for series content
-- Automatic "don't repeat" filtering
-- Style consistency across all scripts
-
----
-
-## 🛠️ Tech Stack
+## Planned Tech Stack
 
 | Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Memory** | Cognee | Graph-vector hybrid store for persistent context |
-| **LLM** | Claude API (`claude-sonnet-4-6`) | Script generation with injected memory |
-| **Backend** | FastAPI | REST API for pipeline integration |
-| **Embeddings** | OpenAI / Cognee native | Semantic vector search |
-| **Graph DB** | Cognee graph layer | Relationship mapping between topics/scripts |
-| **Language** | Python 3.11+ | Core pipeline |
-| **Storage** | SQLite / PostgreSQL | Structured content metadata |
+| --- | --- | --- |
+| API | FastAPI | REST endpoints for ingestion, retrieval, and generation |
+| Language | Python 3.11+ | Core backend and pipeline logic |
+| LLM | Claude API | Content generation with retrieved memory context |
+| Memory | Cognee or graph/vector store | Hybrid relationship and semantic memory |
+| Data | SQLite first, PostgreSQL later | Local development and production-ready metadata storage |
+| Testing | Pytest | Retrieval and prompt-building validation |
+| DevOps | Docker, GitHub Actions | Repeatable setup and CI checks |
 
----
+## Target API Shape
 
-## 📁 Project Structure
-
-```
-contentmind/
-├── main.py                    # FastAPI app entry point
-├── config.py                  # API keys and settings
-│
-├── memory/
-│   ├── cognee_client.py       # Cognee graph-vector store wrapper
-│   ├── ingestion.py           # Add scripts/content to memory
-│   ├── retrieval.py           # Query memory for relevant context
-│   └── schemas.py             # Memory data models
-│
-├── pipeline/
-│   ├── script_generator.py    # Claude API + memory context
-│   ├── context_builder.py     # Assembles memory into prompt context
-│   ├── dedup_filter.py        # Prevent topic repetition
-│   └── style_enforcer.py      # Brand voice consistency
-│
-├── api/
-│   ├── routes/
-│   │   ├── memory.py          # POST /memory/ingest, GET /memory/query
-│   │   ├── generate.py        # POST /generate/script
-│   │   └── channel.py         # GET/POST /channel/profile
-│   └── middleware.py
-│
-├── models/
-│   ├── channel.py             # Channel identity model
-│   ├── script.py              # Script content model
-│   └── audience.py            # Audience profile model
-│
-├── tests/
-│   ├── test_memory.py
-│   └── test_generation.py
-│
-├── requirements.txt
-├── .env.example
-└── docker-compose.yml
-```
-
----
-
-## ⚡ Quick Start
-
-### 1. Clone & Install
-
-```bash
-git clone https://github.com/nit9451/contentmind.git
-cd contentmind
-pip install -r requirements.txt
-```
-
-### 2. Configure
-
-```bash
-cp .env.example .env
-```
-
-```env
-ANTHROPIC_API_KEY=your_key_here
-OPENAI_API_KEY=your_key_here
-COGNEE_API_KEY=your_key_here
-DATABASE_URL=sqlite:///contentmind.db
-```
-
-### 3. Initialize Memory
-
-```bash
-python -m contentmind.memory.init
-```
-
-### 4. Ingest Your Content
-
-```python
-from contentmind.memory import ingest
-
-# Add your channel identity
-ingest.channel_profile(
-    name="@pranitz.ai",
-    niche="AI tools for creators",
-    audience="solopreneurs and developers",
-    tone="educational, concise, practical"
-)
-
-# Add past scripts
-ingest.script(
-    title="Top 5 AI Video Tools 2026",
-    content="...",
-    views=12000,
-    retention=0.68
-)
-```
-
-### 5. Generate with Memory
-
-```python
-from contentmind.pipeline import generate
-
-script = generate.script(
-    topic="Best AI image tools for YouTube thumbnails"
-)
-# ContentMind auto-injects all relevant context
-# Claude generates a perfectly on-brand script
-print(script)
-```
-
-### 6. Run the API
-
-```bash
-uvicorn main:app --reload
-```
-
----
-
-## 🔌 API Reference
-
-### Ingest Content into Memory
 ```http
 POST /memory/ingest
-Content-Type: application/json
-
-{
-  "type": "script",
-  "title": "How I automate my YouTube channel with AI",
-  "content": "...",
-  "metadata": {
-    "views": 8500,
-    "published_at": "2026-06-01"
-  }
-}
 ```
 
-### Query Memory
+Stores channel profiles, scripts, outlines, research notes, and performance metadata.
+
 ```http
-GET /memory/query?q=AI+video+tools&limit=5
-
-Response:
-{
-  "results": [
-    {
-      "type": "script",
-      "title": "Top AI Video Tools",
-      "relevance": 0.94,
-      "summary": "..."
-    }
-  ],
-  "context": "Channel @pranitz.ai covers AI tools..."
-}
+GET /memory/query?q=ai-video-tools&limit=5
 ```
 
-### Generate Script with Memory
+Returns relevant memories for a topic or generation request.
+
 ```http
 POST /generate/script
-Content-Type: application/json
-
-{
-  "topic": "Best AI image tools for thumbnails",
-  "duration_minutes": 8,
-  "style": "educational"
-}
-
-Response:
-{
-  "script": "...",
-  "memory_used": ["past_script_1", "channel_profile", "audience_data"],
-  "context_tokens": 847
-}
 ```
 
----
+Builds memory-aware prompt context and generates a script draft.
 
-## 📊 Performance
+## Example Memory Flow
 
-| Metric | Without ContentMind | With ContentMind |
-|--------|--------------------|--------------------|
-| Context setup per session | ~500 tokens | ~0 tokens |
-| Script relevance score | 6.2 / 10 | 8.9 / 10 |
-| Brand voice consistency | 65% | 94% |
-| Topic repeat rate | 23% | 2% |
-| Generation time | ~12s | ~9s |
+```python
+channel_profile = {
+    "name": "@pranitz.ai",
+    "niche": "AI tools for creators",
+    "audience": "solopreneurs, developers, and content creators",
+    "tone": "practical, concise, educational"
+}
 
----
+generation_request = {
+    "topic": "Best AI image tools for YouTube thumbnails",
+    "format": "8 minute YouTube script"
+}
 
-## 🗺️ Roadmap
+# ContentMind retrieves relevant channel memory, previous topics,
+# preferred hook formats, and duplicate-topic warnings before generation.
+```
 
-- [x] Core Cognee graph-vector integration
-- [x] Script ingestion and retrieval
-- [x] Claude API generation with memory context
-- [ ] YouTube Analytics API integration (auto-ingest performance data)
-- [ ] Automated topic gap detection
-- [ ] Multi-channel support
-- [ ] Web dashboard for memory visualization
-- [ ] Webhook support for auto-ingestion on publish
+## Repository Status
 
----
+This repository currently contains the architecture and product direction for ContentMind. The next step is to convert the specification into a working MVP.
 
-## 🏆 Built For
+## Build Roadmap
 
-**WeMakeDevs × Cognee Hackathon 2026**
-Targeting: Open Source · Blog · Social Buzz prize tracks
+| Phase | Goal | Status |
+| --- | --- | --- |
+| 1 | Define architecture, use cases, and API shape | Done |
+| 2 | Create FastAPI skeleton and configuration | Next |
+| 3 | Implement local memory ingestion | Planned |
+| 4 | Add semantic retrieval and ranking | Planned |
+| 5 | Add Claude generation pipeline | Planned |
+| 6 | Add tests, Docker, and CI | Planned |
+| 7 | Add dashboard or CLI workflow | Planned |
 
----
+## Tech Lead Notes
 
-## 📄 License
+Key design decisions:
 
-MIT License — see [LICENSE](LICENSE)
+- Start with a small backend-first MVP before adding a dashboard.
+- Keep memory ingestion separate from generation so each part can be tested independently.
+- Store structured metadata alongside embeddings so retrieval can filter by content type, audience, channel, and topic cluster.
+- Add duplicate-topic detection early because it creates immediate value for content planning.
+- Treat prompt context as a generated artifact that can be inspected, tested, and improved.
 
----
+## Why This Project Matters
 
-## 👤 Author
+ContentMind demonstrates practical AI engineering beyond a simple chatbot:
 
-**Nitish Purohit** — Senior AI Engineer
-[GitHub](https://github.com/nit9451) · [LinkedIn](https://linkedin.com/in/nitish-purohit-9a5232163)
+- Persistent memory design
+- RAG-style retrieval
+- Context engineering
+- API design
+- Product thinking
+- Roadmap planning
+- Maintainable backend architecture
 
-> *Part of the @pranitz.ai AI content automation ecosystem*
+## Author
+
+Nitish Purohit  
+Senior Full Stack Engineer with 6+ years of experience and 2.5 years of focused AI engineering experience.
+
+- GitHub: [github.com/nit9451](https://github.com/nit9451)
+- Portfolio: [nit9451.github.io](https://nit9451.github.io/)
