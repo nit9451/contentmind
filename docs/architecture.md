@@ -128,9 +128,9 @@ GenerationRun
 
 1. Create FastAPI project skeleton. Done.
 2. Add Pydantic models for channel profiles and content items. Done.
-3. Implement local SQLite persistence.
-4. Add memory ingestion endpoint.
-5. Add retrieval endpoint with simple keyword search.
+3. Add memory ingestion endpoint. Done.
+4. Add retrieval endpoint with simple keyword search. Done.
+5. Implement local SQLite persistence.
 6. Upgrade retrieval to embeddings.
 7. Add Claude generation endpoint.
 8. Add tests for ingestion, retrieval, and context building.

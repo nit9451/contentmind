@@ -25,6 +25,17 @@ class ContentItem(BaseModel):
     performance_metadata: dict[str, float | int | str] = Field(default_factory=dict)
 
 
+class MemoryRecord(BaseModel):
+    id: int
+    item: ContentItem
+
+
+class MemoryQueryResponse(BaseModel):
+    query: str
+    count: int
+    results: list[MemoryRecord]
+
+
 class GenerationRequest(BaseModel):
     topic: str
     format: str = "script"
