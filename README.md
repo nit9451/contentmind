@@ -142,14 +142,14 @@ generation_request = {
 
 ## Repository Status
 
-This repository currently contains the architecture and product direction for ContentMind. The next step is to convert the specification into a working MVP.
+This repository contains the architecture direction and an initial FastAPI skeleton. The current implementation exposes a health endpoint and schema models that will support the memory ingestion and generation pipeline.
 
 ## Build Roadmap
 
 | Phase | Goal | Status |
 | --- | --- | --- |
 | 1 | Define architecture, use cases, and API shape | Done |
-| 2 | Create FastAPI skeleton and configuration | Next |
+| 2 | Create FastAPI skeleton and configuration | Done |
 | 3 | Implement local memory ingestion | Planned |
 | 4 | Add semantic retrieval and ranking | Planned |
 | 5 | Add Claude generation pipeline | Planned |
@@ -165,6 +165,16 @@ Key design decisions:
 - Store structured metadata alongside embeddings so retrieval can filter by content type, audience, channel, and topic cluster.
 - Add duplicate-topic detection early because it creates immediate value for content planning.
 - Treat prompt context as a generated artifact that can be inspected, tested, and improved.
+
+## Local Development
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pytest
+uvicorn contentmind.main:app --reload
+```
 
 ## Why This Project Matters
 
